@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Robot Virtual Assistant</title>
+    <link rel="icon" href="r4.png" type="image/x-icon">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap');
+        *{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            width: 100%;
+            height: 100vh;
+            background-color: black;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 20px;
+            color: rgba(255, 253, 247, 0.913);
+            font-family: "Bebas Neue", sans-serif;
+            overflow: hidden;
+        }
+        #logo {
+            width: 20vw;
+            max-width: 150px;
+        }
+        h1 {
+            color: rgba(255, 253, 247, 0.913);
+            text-align: center;
+        }
+        #name {
+            color: rgb(227, 90, 21);
+            font-size: 50px;
+        }
+        #va {
+            color: rgb(211, 98, 37); 
+            font-size: 45px;
+        }
+        #voice {
+            width: 200px;
+            display: none;
+        }
+        #btn {
+            width: 50%;
+            max-width: 300px;
+            background: linear-gradient(to right, rgb(231, 34, 34), rgb(201, 192, 88));
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 20px;
+            border-radius: 20px;
+            color: white;
+            box-shadow: 2px 2px 10px rgb(198, 71, 29), 2px 2px 10px rgb(163, 28, 91);
+            border: none;
+            transition: all 0.5s;
+            cursor: pointer;
+        }
+        #btn:hover {
+            box-shadow: 2px 2px 15px rgb(207, 64, 25), 2px 2px 10px rgb(163, 28, 91);
+            letter-spacing: 2px;
+        }
+        #btn:focus {
+            outline: none;
+            box-shadow: 0 0 10px rgba(189, 77, 37, 0.5);
+        }
+        @media (max-width: 600px) {
+            #name {
+                font-size: 40px;
+            }
+            #va {
+                font-size: 35px;
+            }
+            #btn {
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <img src="r6.jpg" alt="logo" id="logo">
+    <h1>I'M <span id="name">R</span>obot, Your <span id="va">V</span>irtual Assistant</h1>
+    <img src="voice.gif" alt="voice" id="voice">
+    <button id="btn" aria-label="Click to start voice recognition">
+        <img src="mic.svg" alt="Microphone icon">
+        <span id="content">Click here and speak</span>
+    </button>
+    <script>
+        const btn = document.querySelector("#btn");
+        const content = document.querySelector("#content");
+        const voice = document.querySelector("#voice");
+
+        function speak(text) {
+            const textSpeak = new SpeechSynthesisUtterance(text);
+            textSpeak.rate = 1;
+            textSpeak.pitch = 1;
+            textSpeak.volume = 1;
+            window.speechSynthesis.speak(textSpeak);
+        }
+
+        function wishMe() {
+            const day = new Date();
+            const hours = day.getHours(); 
+            if (hours >= 0 && hours < 12) {
+                speak("Good Morning");
+            } else if (hours >= 12 && hours < 16) {
+                speak("Good Afternoon");
+            } else {
+                speak("Good Evening");
+            }
+        }
+
+        window.addEventListener('load', () => {
+            wishMe();
+        });
+
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition; 
+        if (!SpeechRecognition) {
+            alert("Your browser does not support speech recognition. Please use a modern browser.");
+        } else {
+            const recognition = new SpeechRecognition();
+
+            recognition.onresult = (event) => {
+                const currentIndex = event.resultIndex;
+                const transcript = event.results[currentIndex][0].transcript; 
+                content.innerText = transcript;
+                takeCommand(transcript.toLowerCase());
+            };
+
+            recognition.onerror = (event) => {
+                console.error("Speech recognition error detected: " + event.error);
+                speak("Sorry, I didn't catch that. Could you please repeat?");
+            };
+
+            btn.addEventListener("click", () => {
+                recognition.start();
+                btn.style.display = "none"; 
+                voice.style.display = "block"; 
+            });
+
+            function takeCommand(message) { 
+                btn.style.display = "flex"; 
+                voice.style.display = "none"; 
+
+                if (message.includes("hello") || message.includes("hey")) {
+                    speak("Hello, what can I help you with?");
+                } else if (message.includes("who are you")) {
+                    speak("I am a virtual assistant, created by Nikhil Sahu.");
+                } else if (message.includes("open youtube")) {
+                    speak("Opening YouTube");
+                    window.open("https://www.youtube.com");
+                } else if (message.includes("open google")) {
+                    speak("Opening Google");
+                    window.open("https://www.google.com");
+                } else if (message.includes("open facebook")) {
+                    speak("Opening Facebook");
+                    window.open("https://www.facebook.com");
+                } else if (message.includes("open instagram")) {
+                    speak("Opening Instagram");
+                    window.open("https://www.instagram.com");
+                } else if (message.includes("open whatsapp")) {
+                    speak("Opening WhatsApp");
+                    window.open("https://web.whatsapp.com");
+                } else if (message.includes("time")) {
+                    const time = new Date().toLocaleTimeString(undefined, { hour: "numeric", minute: "numeric" }); 
+                    speak(`The time is ${time}`);
+                } else if (message.includes("date")) {
+                    const date = new Date().toLocaleDateString(undefined, { day: "numeric", month: "long", year: "numeric" });
+                    speak(`Today's date is ${date}`);
+                } else {
+                    speak("Sorry, I didn't understand that.");
+                    window.open(`https://www.google.com/search?q=${encodeURIComponent(message)}`, "_blank");
+                }
+            }
+        }
+    </script>
+</body>
+</html>
